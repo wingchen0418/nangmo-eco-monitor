@@ -1,0 +1,39 @@
+name: 水质数据采集
+
+on:
+  schedule:
+    # 每10分钟一次（GitHub Actions定时有抖动，实际间隔10-30分钟）
+    - cron: '*/10 * * * *'
+  workflow_dispatch:  # 允许手动触发
+
+permissions:
+  contents: write
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 运行采集脚本
+        env:
+          JTR_TOKEN: ${{ secrets.JTR_TOKEN }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          WECOM_WEBHOOK: ${{ secrets.WECOM_WEBHOOK }}
+        run: python collector/collect.py
+
+      - name: 提交数据到仓库
+        run: |
+          git config user.name "eco-monitor-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add docs/data/
+          if git diff --cached --quiet; then
+            echo "数据无变化"
+          else
+            git commit -m "data: $(date -u +'%Y-%m-%d %H:%M') 自动采集"
+            git push
+          fi

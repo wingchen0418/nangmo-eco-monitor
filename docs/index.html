@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>蔚芝之美 · 校园水生态数字孪生监测</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root{
+  --ink:#1d2b26; --ink-soft:#4a5d55; --paper:#f7f9f6; --panel:#ffffff;
+  --brand:#1b6e54; --brand-soft:#e3f0e9; --line:#dbe5de;
+  --ok:#2e9e5b; --warn:#d9930d; --bad:#d44a3b;
+  --radius:14px;
+  --shadow:0 2px 10px rgba(29,43,38,.08),0 10px 30px rgba(29,43,38,.06);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--paper);color:var(--ink);line-height:1.7}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+header.hero{background:linear-gradient(180deg,#123f30 0%,#1b6e54 100%);color:#fff;padding:40px 0 34px}
+header.hero .kicker{font-size:13px;letter-spacing:.18em;opacity:.75;text-transform:uppercase}
+header.hero h1{font-size:30px;margin:8px 0 6px;font-weight:700}
+header.hero p.sub{opacity:.85;max-width:780px;font-size:14.5px}
+.live-row{display:flex;align-items:center;gap:14px;margin-top:16px;flex-wrap:wrap}
+.live-dot{width:10px;height:10px;border-radius:50%;background:#7be3a8;animation:blink 1.6s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.live-row span{font-size:13px;opacity:.9}
+section{padding:34px 0 10px}
+.sec-head{margin-bottom:18px}
+.sec-head h2{font-size:21px}
+.sec-head p{color:var(--ink-soft);font-size:13.5px;margin-top:4px}
+/* 设备状态卡 */
+.dev-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.dev-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);border-top:4px solid var(--ok)}
+.dev-card.offline{border-top-color:var(--bad)}
+.dev-card.stale{border-top-color:var(--warn)}
+.dev-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.dev-head h3{font-size:15.5px}
+.dev-head .st{font-size:11.5px;padding:2px 10px;border-radius:999px;color:#fff;background:var(--ok)}
+.dev-card.offline .st{background:var(--bad)}
+.dev-card.stale .st{background:var(--warn)}
+.dev-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.dev-metrics div{text-align:center;background:var(--paper);border-radius:8px;padding:6px 2px}
+.dev-metrics b{font-size:16.5px;display:block;font-variant-numeric:tabular-nums}
+.dev-metrics span{font-size:10.5px;color:var(--ink-soft)}
+.dev-time{font-size:11px;color:var(--ink-soft);margin-top:8px;text-align:right}
+/* 图表 */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.chart-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.chart-card h3{font-size:15px;padding:14px 18px 0}
+.chart-card .chart{width:100%;height:260px}
+.chart-card.full{grid-column:1/-1}
+.chart-card.full .chart{height:300px}
+.note{font-size:12px;color:var(--ink-soft);padding:0 18px 12px}
+.note.bad-note{color:#8a4a10;background:#fdf6e9;margin:0 18px 14px;padding:8px 12px;border-radius:8px;border:1px solid #f0ddae}
+/* 预警 */
+.alert-list{display:flex;flex-direction:column;gap:10px}
+.alert-item{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--warn);border-radius:10px;padding:12px 16px;box-shadow:var(--shadow);font-size:13.5px}
+.alert-item.red{border-left-color:var(--bad)}
+.alert-item .a-head{display:flex;justify-content:space-between;font-weight:600;margin-bottom:2px}
+.alert-item .a-time{font-size:12px;color:var(--ink-soft);font-weight:400}
+.alert-item p{color:var(--ink-soft);font-size:12.5px}
+.empty{color:var(--ink-soft);font-size:13.5px;text-align:center;padding:26px;background:var(--panel);border:1px dashed var(--line);border-radius:var(--radius)}
+/* 快照表 */
+.snap-table{width:100%;border-collapse:collapse;background:var(--panel);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);font-size:13px}
+.snap-table th{background:var(--brand);color:#fff;text-align:left;padding:10px 14px;font-weight:600}
+.snap-table td{padding:8px 14px;border-top:1px solid var(--line);color:var(--ink-soft)}
+.snap-table td:first-child{color:var(--ink);font-weight:600}
+.st-on{color:var(--ok);font-weight:700}.st-off{color:var(--bad);font-weight:700}
+footer{border-top:1px solid var(--line);margin-top:40px;padding:22px 0 34px;color:var(--ink-soft);font-size:12.5px}
+footer b{color:var(--ink)}
+@media(max-width:900px){.dev-cards{grid-template-columns:repeat(2,1fr)}.chart-grid{grid-template-columns:1fr}header.hero h1{font-size:23px}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">Digital Twin · IoT · Real-time</div>
+    <h1>蔚芝之美 · 校园水生态数字孪生监测</h1>
+    <p class="sub">物联网传感网络 × 云端自动采集 × 智能预警规则引擎。数据每 5 分钟由校园传感设备上报，云端管道自动入仓、巡检、预警。南洋模范中学 青少年科技创新大赛项目。</p>
+    <div class="live-row">
+      <div class="live-dot"></div>
+      <span id="updateTime">数据加载中…</span>
+      <span id="deviceCount"></span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head"><h2>监测站实时状态</h2><p>状态判定：最新数据超过 15 分钟未更新即判离线，预警引擎同步向微信推送告警。</p></div>
+    <div class="dev-cards" id="devCards"><div class="empty">加载中…</div></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head"><h2>深水区水质 · 48 小时曲线</h2><p>溶解氧呈现显著的昼夜节律：午后光合作用产氧达峰，凌晨呼吸作用耗氧触底，是判断池塘生态健康的核心指标。</p></div>
+    <div class="chart-grid">
+      <div class="chart-card full"><h3>溶解氧（DO）· mg/L</h3><div class="chart" id="chartDO"></div><p class="note">参考线：3 mg/L 低氧预警（黄）/ 2 mg/L 严重缺氧（红）</p></div>
+      <div class="chart-card"><h3>水温 · ℃</h3><div class="chart" id="chartTemp"></div></div>
+      <div class="chart-card"><h3>电导率（EC）· μS/cm</h3><div class="chart" id="chartEC"></div><p class="note">短时变幅 &gt;10%/小时 触发扰动预警（径流/污染输入信号）</p></div>
+    </div>
+    <div class="note bad-note" style="margin-top:16px">⚠️ pH 数据说明：平台 pH 探头自 2026 年 7 月起持续故障（读数恒 2.4~2.6，超出合理量程），本项目将其判定为无效数据并排除于分析之外；后续将由课题组自研 ESP32 低成本 pH 节点替代测量。</div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head"><h2>气象与空气 · 24 小时</h2><p>气象因子（光照、气温）是溶解氧昼夜节律的驱动变量，用于构建低氧预测模型。</p></div>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>气温 / 湿度</h3><div class="chart" id="chartMeteo"></div></div>
+      <div class="chart-card"><h3>光照强度(lx) / PM2.5</h3><div class="chart" id="chartAir"></div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head"><h2>预警事件记录</h2><p>由预警规则引擎自动产生（规则经 9 月历史数据回测标定，误报率 0）。</p></div>
+    <div class="alert-list" id="alertList"><div class="empty">加载中…</div></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head"><h2>校园传感网络 · 37 台设备快照</h2><p>覆盖水质、气象、空气、土壤、环境五类传感器的校园物联网。</p></div>
+    <table class="snap-table"><thead><tr><th>设备</th><th>类型</th><th>位置/用途</th><th>状态</th></tr></thead><tbody id="snapBody"><tr><td colspan="4" style="text-align:center">加载中…</td></tr></tbody></table>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <b>蔚芝之美 · 校园水生态数字孪生监测</b> | 南洋模范中学 全国青少年科技创新大赛项目<br>
+    数据链路：校园物联网传感器 → 聚天然教学平台 → GitHub Actions 云端采集 → GitHub Pages 数字孪生 → 微信双通道预警<br>
+    页面每 5 分钟自动刷新 | <span id="footTime"></span>
+  </div>
+</footer>
+
+<script>
+const KEY_DEVICES = [
+  { serialNo:'ZJ_SZ06_009', name:'深水区水质站', metrics:[['do','DO','mg/L'],['temperature','水温','℃'],['ec','EC','μS/cm']] },
+  { serialNo:'QXZ-A0014',   name:'气象监测站',   metrics:[['temperature','气温','℃'],['humidity','湿度','%'],['light','光照','lx']] },
+  { serialNo:'ZJ_KQ04_002', name:'空气质量站',   metrics:[['pm25','PM2.5',''],['pm10','PM10',''],['tvoc','TVOC','mg/m³']] },
+  { serialNo:'ZJ_SZ05_010', name:'实验室水生生态', metrics:[['do','DO','mg/L'],['temperature','水温','℃'],['ec','EC','μS/cm']] },
+];
+const $ = id => document.getElementById(id);
+const charts = {};
+const fmtT = ts => { const d=new Date(ts*1000); return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; };
+
+async function fetchJSON(url){ try{ const r=await fetch(url+'?t='+Date.now()); return r.ok?await r.json():null; }catch(e){ return null; } }
+
+function dayStr(offset){ const d=new Date(Date.now()+offset*86400000); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+
+function isOnline(dev){ return dev.data && dev.data.create_time && (Date.now()/1000 - Number(dev.data.create_time)) < 900; }
+
+function renderDevices(latest){
+  const cards = KEY_DEVICES.map(kd => {
+    const dev = (latest.devices||[]).find(d=>d.serialNo===kd.serialNo);
+    const online = dev && isOnline(dev);
+    const stale = dev && dev.data && dev.data.create_time && !online;
+    const cls = online?'':(stale?'stale':'offline');
+    const stText = online?'在线':(stale?'数据延迟':'离线');
+    const metrics = kd.metrics.map(([key,label,unit])=>{
+      let v = dev && dev.data ? dev.data[key] : null;
+      if(v===undefined||v===null||v==='') v='—'; else v=Number(v).toFixed(key==='do'?2:1);
+      return `<div><b>${v}</b><span>${label} ${unit}</span></div>`;
+    }).join('');
+    const t = dev && dev.data && dev.data.create_time ? fmtT(Number(dev.data.create_time)) : '无数据';
+    return `<div class="dev-card ${cls}"><div class="dev-head"><h3>${kd.name}</h3><span class="st">${stText}</span></div><div class="dev-metrics">${metrics}</div><div class="dev-time">更新 ${t}</div></div>`;
+  });
+  $('devCards').innerHTML = cards.join('');
+  const on = (latest.devices||[]).filter(isOnline).length;
+  $('deviceCount').textContent = `全网络 ${on}/${(latest.devices||[]).length} 台设备在线`;
+}
+
+function seriesFrom(history, serialNo, key){
+  return history.filter(h=>h.serial_no===serialNo && h.payload[key]!==undefined && h.payload[key]!=='')
+    .map(h=>[Number(h.create_time)*1000, Number(h.payload[key])]);
+}
+function downsample(arr, maxN=600){ if(arr.length<=maxN) return arr; const step=Math.ceil(arr.length/maxN); return arr.filter((_,i)=>i%step===0); }
+
+function makeChart(id, opt){
+  if(!charts[id]) charts[id]=echarts.init($(id));
+  charts[id].setOption(Object.assign({
+    grid:{left:48,right:20,top:30,bottom:44},
+    xAxis:{type:'time',axisLabel:{color:'#4a5d55',fontSize:11}},
+    yAxis:{type:'value',axisLabel:{color:'#4a5d55',fontSize:11},splitLine:{lineStyle:{color:'#eef2ee'}}},
+    tooltip:{trigger:'axis'},
+    dataZoom:[{type:'inside'}],
+  }, opt));
+}
+
+function renderCharts(history){
+  const doS = downsample(seriesFrom(history,'ZJ_SZ06_009','do'));
+  makeChart('chartDO',{ series:[{name:'DO',type:'line',data:doS,showSymbol:false,lineStyle:{color:'#3B8BD4',width:2},itemStyle:{color:'#3B8BD4'},
+    markLine:{symbol:'none',label:{fontSize:10},data:[{yAxis:3,lineStyle:{color:'#d9930d'}},{yAxis:2,lineStyle:{color:'#d44a3b'}}]}}] });
+  makeChart('chartTemp',{ series:[{name:'水温',type:'line',data:downsample(seriesFrom(history,'ZJ_SZ06_009','temperature')),showSymbol:false,lineStyle:{color:'#E8A33D',width:2},itemStyle:{color:'#E8A33D'},areaStyle:{opacity:.08}}] });
+  makeChart('chartEC',{ series:[{name:'EC',type:'line',data:downsample(seriesFrom(history,'ZJ_SZ06_009','ec')),showSymbol:false,lineStyle:{color:'#54A054',width:2},itemStyle:{color:'#54A054'}}] });
+  makeChart('chartMeteo',{ legend:{textStyle:{fontSize:11},top:0},
+    series:[{name:'气温℃',type:'line',data:downsample(seriesFrom(history,'QXZ-A0014','temperature')),showSymbol:false,lineStyle:{width:2},itemStyle:{color:'#E8A33D'}},
+            {name:'湿度%',type:'line',data:downsample(seriesFrom(history,'QXZ-A0014','humidity')),showSymbol:false,lineStyle:{width:2},itemStyle:{color:'#3B8BD4'}}] });
+  makeChart('chartAir',{ legend:{textStyle:{fontSize:11},top:0},
+    series:[{name:'光照lx',type:'line',data:downsample(seriesFrom(history,'QXZ-A0014','light')),showSymbol:false,lineStyle:{width:2},itemStyle:{color:'#d4b23b'}},
+            {name:'PM2.5',type:'line',data:downsample(seriesFrom(history,'ZJ_KQ04_002','pm25')),showSymbol:false,lineStyle:{width:2},itemStyle:{color:'#8a6db8'}}] });
+}
+
+function renderAlerts(alerts){
+  if(!alerts || !alerts.length){ $('alertList').innerHTML='<div class="empty">暂无预警事件 — 系统运行平稳</div>'; return; }
+  $('alertList').innerHTML = alerts.slice(0,10).map(a=>
+    `<div class="alert-item ${a.level==='红'?'red':''}"><div class="a-head"><span>${a.level==='红'?'🔴':'🟡'} ${a.rule} · ${a.serial_no}</span><span class="a-time">${a.time}</span></div><p>${a.detail}</p></div>`
+  ).join('');
+}
+
+function renderSnap(latest){
+  const rows = (latest.devices||[]).map(d=>{
+    const on = isOnline(d);
+    return `<tr><td>${d.serialNo}</td><td>${d.categoryName}</td><td>${d.remarks||'—'}</td><td class="${on?'st-on':'st-off'}">${on?'● 在线':'○ 离线'}</td></tr>`;
+  }).join('');
+  $('snapBody').innerHTML = rows || '<tr><td colspan="4" style="text-align:center">无数据</td></tr>';
+}
+
+async function refresh(){
+  const [latest, today, yesterday, alerts] = await Promise.all([
+    fetchJSON('./data/latest.json'),
+    fetchJSON(`./data/history/${dayStr(0)}.json`),
+    fetchJSON(`./data/history/${dayStr(-1)}.json`),
+    fetchJSON('./data/alerts.json'),
+  ]);
+  if(!latest){ $('updateTime').textContent='等待首次采集…（GitHub Actions 运行后数据将自动出现）'; return; }
+  $('updateTime').textContent = `最近采集：${latest.updated_at}`;
+  $('footTime').textContent = `数据时间：${latest.updated_at}`;
+  renderDevices(latest); renderSnap(latest); renderAlerts(alerts);
+  renderCharts([...(yesterday||[]), ...(today||[])]);
+}
+refresh();
+setInterval(refresh, 5*60*1000);
+window.addEventListener('resize', ()=>Object.values(charts).forEach(c=>c.resize()));
+</script>
+</body>
+</html>
