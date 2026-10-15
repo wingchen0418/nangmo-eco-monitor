@@ -151,12 +151,13 @@ async function fetchJSON(url){ try{ const r=await fetch(url+'?t='+Date.now()); r
 
 function dayStr(offset){ const d=new Date(Date.now()+offset*86400000); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 
-function isOnline(dev){ return dev.data && dev.data.create_time && (Date.now()/1000 - Number(dev.data.create_time)) < 900; }
+function isOnline(dev, refTs){ return dev.data && dev.data.create_time && (refTs - Number(dev.data.create_time)) < 900; }
 
 function renderDevices(latest){
+  const refTs = latest.updated_ts || Math.floor(Date.now()/1000);  // 以采集时刻为基准判定设备在线状态
   const cards = KEY_DEVICES.map(kd => {
     const dev = (latest.devices||[]).find(d=>d.serialNo===kd.serialNo);
-    const online = dev && isOnline(dev);
+    const online = dev && isOnline(dev, refTs);
     const stale = dev && dev.data && dev.data.create_time && !online;
     const cls = online?'':(stale?'stale':'offline');
     const stText = online?'在线':(stale?'数据延迟':'离线');
@@ -169,8 +170,8 @@ function renderDevices(latest){
     return `<div class="dev-card ${cls}"><div class="dev-head"><h3>${kd.name}</h3><span class="st">${stText}</span></div><div class="dev-metrics">${metrics}</div><div class="dev-time">更新 ${t}</div></div>`;
   });
   $('devCards').innerHTML = cards.join('');
-  const on = (latest.devices||[]).filter(isOnline).length;
-  $('deviceCount').textContent = `全网络 ${on}/${(latest.devices||[]).length} 台设备在线`;
+  const on = (latest.devices||[]).filter(d=>isOnline(d, refTs)).length;
+  $('deviceCount').textContent = `全网络 ${on}/${(latest.devices||[]).length} 台设备在线（采集时刻）`;
 }
 
 function seriesFrom(history, serialNo, key){
@@ -212,8 +213,9 @@ function renderAlerts(alerts){
 }
 
 function renderSnap(latest){
+  const refTs = latest.updated_ts || Math.floor(Date.now()/1000);
   const rows = (latest.devices||[]).map(d=>{
-    const on = isOnline(d);
+    const on = isOnline(d, refTs);
     return `<tr><td>${d.serialNo}</td><td>${d.categoryName}</td><td>${d.remarks||'—'}</td><td class="${on?'st-on':'st-off'}">${on?'● 在线':'○ 离线'}</td></tr>`;
   }).join('');
   $('snapBody').innerHTML = rows || '<tr><td colspan="4" style="text-align:center">无数据</td></tr>';
@@ -227,7 +229,8 @@ async function refresh(){
     fetchJSON('./data/alerts.json'),
   ]);
   if(!latest){ $('updateTime').textContent='等待首次采集…（GitHub Actions 运行后数据将自动出现）'; return; }
-  $('updateTime').textContent = `最近采集：${latest.updated_at}`;
+  const collectAgeMin = Math.round((Date.now()/1000 - latest.updated_ts)/60);
+  $('updateTime').textContent = `最近采集：${latest.updated_at}` + (collectAgeMin > 45 ? `（⚠️ 云端采集已中断 ${collectAgeMin} 分钟）` : '');
   $('footTime').textContent = `数据时间：${latest.updated_at}`;
   renderDevices(latest); renderSnap(latest); renderAlerts(alerts);
   renderCharts([...(yesterday||[]), ...(today||[])]);
