@@ -66,6 +66,41 @@ section{padding:34px 0 10px}
 .snap-table td{padding:8px 14px;border-top:1px solid var(--line);color:var(--ink-soft)}
 .snap-table td:first-child{color:var(--ink);font-weight:600}
 .st-on{color:var(--ok);font-weight:700}.st-off{color:var(--bad);font-weight:700}
+/* ---------- 宏基因组生态画像 ---------- */
+.meta-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.meta-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);border-top:4px solid var(--mc,#1b6e54)}
+.meta-card h3{font-size:16px;margin-bottom:2px}
+.meta-card .zone{font-size:12px;color:var(--ink-soft);margin-bottom:12px}
+.meta-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.meta-stats div{background:var(--paper);border-radius:8px;padding:8px 10px;text-align:center}
+.meta-stats b{font-size:17px;display:block;font-variant-numeric:tabular-nums}
+.meta-stats span{font-size:10.5px;color:var(--ink-soft)}
+.meta-note{font-size:12px;color:var(--ink-soft);margin-top:10px;background:var(--brand-soft);border-radius:8px;padding:8px 12px}
+/* ---------- 图文板块 ---------- */
+.img-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.img-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.img-card img{width:100%;display:block;object-fit:cover;max-height:300px}
+.img-card figcaption{padding:12px 16px;font-size:13px;color:var(--ink-soft)}
+.img-card figcaption b{color:var(--ink);font-size:14px;display:block;margin-bottom:2px}
+/* ---------- 土壤检测小助手 ---------- */
+.soil-tool{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+.soil-form{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.soil-form label{font-size:13px;color:var(--ink-soft);display:block;margin-bottom:4px}
+.soil-form select,.soil-form input{border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:14px;font-family:inherit;background:var(--paper)}
+.soil-form button{background:var(--brand);color:#fff;border:none;border-radius:10px;padding:10px 24px;font-size:14px;cursor:pointer;font-family:inherit}
+.soil-form button:hover{opacity:.9}
+.soil-result{margin-top:16px;border-radius:12px;padding:14px 18px;font-size:14px;display:none}
+.soil-result.show{display:block}
+.soil-result .lv{font-weight:700;font-size:16px;margin-right:8px}
+/* ---------- 科普实验 ---------- */
+.science-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:center}
+.science-card img{width:100%;border-radius:10px}
+.science-card h3{font-size:17px;margin-bottom:8px}
+.science-card p{font-size:13.5px;color:var(--ink-soft);margin-bottom:10px}
+.science-data{display:flex;gap:10px;flex-wrap:wrap}
+.science-data div{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 14px;text-align:center;flex:1;min-width:90px}
+.science-data b{font-size:19px;display:block;color:#b0483a;font-variant-numeric:tabular-nums}
+.science-data span{font-size:11px;color:var(--ink-soft)}
 footer{border-top:1px solid var(--line);margin-top:40px;padding:22px 0 34px;color:var(--ink-soft);font-size:12.5px}
 footer b{color:var(--ink)}
 @media(max-width:900px){.dev-cards{grid-template-columns:repeat(2,1fr)}.chart-grid{grid-template-columns:1fr}header.hero h1{font-size:23px}}
@@ -132,6 +167,101 @@ footer b{color:var(--ink)}
   <div class="wrap">
     <div class="sec-head"><h2>校园传感网络 · 37 台设备快照</h2><p>覆盖水质、气象、空气、土壤、环境五类传感器的校园物联网。</p></div>
     <table class="snap-table"><thead><tr><th>设备</th><th>类型</th><th>位置/用途</th><th>状态</th></tr></thead><tbody id="snapBody"><tr><td colspan="4" style="text-align:center">加载中…</td></tr></tbody></table>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head"><h2>宏基因组生态画像 · 三点位微生物世界</h2><p>对池塘边缘（X1）、池塘底泥（X2）、人工湿地（X3）各 3 份重复土壤样本的宏基因组测序结果。这是肉眼看不见的生态底座，也是本课题的核心科学发现层。</p></div>
+    <div class="meta-cards">
+      <div class="meta-card" style="--mc:#E8A33D">
+        <h3>X1 池塘边缘</h3><div class="zone">水陆交错带土壤</div>
+        <div class="meta-stats">
+          <div><b>739</b><span>抗性基因丰度</span></div>
+          <div><b>~7.5</b><span>Shannon 多样性</span></div>
+          <div><b>低</b><span>金属抗性负荷</span></div>
+          <div><b>均衡</b><span>群落结构</span></div>
+        </div>
+        <div class="meta-note">相对健康的参照点位，受人为扰动最小</div>
+      </div>
+      <div class="meta-card" style="--mc:#3B8BD4">
+        <h3>X2 池塘底泥</h3><div class="zone">池塘中心沉积物</div>
+        <div class="meta-stats">
+          <div><b>8031</b><span>抗性基因丰度（X1 的 11 倍）</span></div>
+          <div><b>7.28</b><span>Shannon 多样性（最低）</span></div>
+          <div><b>11×</b><span>金属抗性基因 vs X1</span></div>
+          <div><b>79%</b><span>假单胞菌门占比</span></div>
+        </div>
+        <div class="meta-note">🔬 核心发现：池塘底泥是抗性基因的"储藏库"，群落呈富营养化胁迫特征（蓝藻丰度为其他点位 4–6 倍）</div>
+      </div>
+      <div class="meta-card" style="--mc:#54A054">
+        <h3>X3 人工湿地</h3><div class="zone">湿地植物根际基质</div>
+        <div class="meta-stats">
+          <div><b>2576</b><span>抗性基因丰度</span></div>
+          <div><b>7.81</b><span>Shannon 多样性（最高）</span></div>
+          <div><b>-68%</b><span>抗性基因 vs X2</span></div>
+          <div><b>活跃</b><span>氮磷循环功能</span></div>
+        </div>
+        <div class="meta-note">湿地的微生物"引擎"显著削减抗性基因，多样性最高——生态修复有效的微生物学证据</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head"><h2>土壤检测小助手</h2><p>传承自上届课题组的土壤检测阈值库（比色法/滴定法标定）。输入检测值，即时获得等级评价与处置建议。</p></div>
+    <div class="soil-tool">
+      <div class="soil-form">
+        <div>
+          <label>检测项目</label>
+          <select id="soilType">
+            <option value="k">速效钾（滴定滴数）</option>
+            <option value="ph">pH 值</option>
+            <option value="nh3">氨氮（mg/L）</option>
+            <option value="p">有效磷（mg/L）</option>
+          </select>
+        </div>
+        <div>
+          <label id="soilUnit">滴数（滴）</label>
+          <input id="soilVal" type="number" step="any" placeholder="输入数值"/>
+        </div>
+        <button onclick="soilAnalyze()">分析</button>
+      </div>
+      <div class="soil-result" id="soilResult"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head"><h2>科普实验 · 一粒鱼粮的富营养化之旅</h2><p>上届课题组的对照实验：过量鱼粮投入水体后，土壤浸出液检测显示——这正是我们预警引擎"EC 扰动→排查投喂"规则的实验依据。</p></div>
+    <div class="science-card">
+      <div>
+        <h3>极端鱼粮对照组检测结果</h3>
+        <p>过量投喂组的水-土系统出现典型的富营养化指纹：氨氮飙升至常规水体的数百倍，磷钾同步累积。pH 暂未漂移，说明系统缓冲尚未崩溃——但一旦崩溃就是藻华。</p>
+        <div class="science-data">
+          <div><b>500</b><span>氨氮 mg/L ⚠️</span></div>
+          <div><b>240</b><span>磷 mg/L ⚠️</span></div>
+          <div><b>170</b><span>钾 mg/L</span></div>
+          <div><b>6.0</b><span>pH（暂正常）</span></div>
+        </div>
+        <p style="margin-top:10px;font-size:12.5px">→ 对本项目的意义：池塘鱼类投喂必须严格控制；这也解释了 X2 底泥抗性基因富集的潜在成因之一。</p>
+      </div>
+      <img src="./assets/ph-ammonia.jpg" alt="pH与氨氮检测图表"/>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head"><h2>研究沿革 · 从雨水花园到数字孪生</h2><p>本项目站在上届课题组（付子和、胡展鸣、倪云睿）雨水花园研究的肩膀上：他们用 ESP32 证明了低成本物联网监测的可行性，我们把它升级为云端自治的数字孪生与预警系统。</p></div>
+    <div class="img-grid">
+      <figure class="img-card"><img src="./assets/flow.png" alt="研究流程图"/><figcaption><b>整体研究流程</b>上届雨水花园研究的方法论框架，本项目沿用并扩展</figcaption></figure>
+      <figure class="img-card"><img src="./assets/scene.jpg" alt="实验场景"/><figcaption><b>实验场景</b>校园生态园真实监测环境</figcaption></figure>
+      <figure class="img-card"><img src="./assets/plan-v1.png" alt="初版方案"/><figcaption><b>初版方案</b>雨水花园初版设计</figcaption></figure>
+      <figure class="img-card"><img src="./assets/plan-v2.png" alt="再版方案"/><figcaption><b>再版方案</b>迭代优化后的工程设计</figcaption></figure>
+    </div>
   </div>
 </section>
 
@@ -334,6 +464,59 @@ async function refresh(){
   renderCharts(history);
   renderAdvice(latest, history);
 }
+/* ---------- 土壤检测小助手（阈值库移植自上届课题组标定表） ---------- */
+const SOIL_RULES = {
+  k: { unit: '滴数（滴）', name: '速效钾', eval: v => {
+    if (v <= 5)  return ['极丰富（≥220 mg/kg）', '无需施肥', 'ok'];
+    if (v <= 9)  return ['丰富（180–210）', '少量补充钾肥', 'ok'];
+    if (v <= 13) return ['适中（140–170）', '按需补充', 'warn'];
+    if (v <= 16) return ['偏低（110–130）', '建议补充', 'warn'];
+    if (v <= 19) return ['较低（80–100）', '急需补充', 'bad'];
+    if (v <= 22) return ['不足（50–70）', '立即补充', 'bad'];
+    if (v <= 24) return ['严重不足（30–40）', '大量补充', 'bad'];
+    return ['危险水平（<30）', '需改良土壤，建议专业处理', 'bad'];
+  }},
+  ph: { unit: 'pH 值', name: 'pH', eval: v => {
+    if (v < 4.5)  return ['强酸性', '仅适合蓝莓、杜鹃、茶；建议施草木灰或石灰改良', 'bad'];
+    if (v < 5.5)  return ['酸性', '适合马铃薯、甘薯；多数植物受限', 'warn'];
+    if (v < 6.5)  return ['弱酸性', '适合玉米、小麦等，大多数植物可生长', 'ok'];
+    if (v <= 7.5) return ['中性', '大多数作物最适区间 ✅', 'ok'];
+    if (v <= 8.5) return ['弱碱性', '适合甜菜、苜蓿；喜酸植物受限', 'warn'];
+    if (v <= 9.5) return ['碱性', '需要改良（石膏/硫磺粉/有机肥）', 'bad'];
+    return ['强碱性', '不适宜种植，需专业改良', 'bad'];
+  }},
+  nh3: { unit: 'mg/L', name: '氨氮', eval: v => {
+    if (v < 10)  return ['极低', '立即补充氮肥', 'bad'];
+    if (v < 30)  return ['偏低', '建议补充氮肥', 'warn'];
+    if (v < 50)  return ['适中', '维持现状', 'ok'];
+    if (v <= 100) return ['丰富', '无需补充', 'ok'];
+    if (v <= 200) return ['过量', '减少施肥', 'warn'];
+    return ['危险', '停止施肥！注意水体富营养化风险', 'bad'];
+  }},
+  p: { unit: 'mg/L', name: '有效磷', eval: v => {
+    if (v < 20)  return ['极低', '立即补充磷肥', 'bad'];
+    if (v < 40)  return ['偏低', '建议补充磷肥', 'warn'];
+    if (v < 80)  return ['适中', '维持现状', 'ok'];
+    if (v <= 120) return ['丰富', '无需补充', 'ok'];
+    if (v <= 240) return ['过量', '减少施肥', 'warn'];
+    return ['危险', '停止施肥！磷流失会污染水体', 'bad'];
+  }},
+};
+function soilAnalyze(){
+  const type = $('soilType').value;
+  const v = Number($('soilVal').value);
+  const box = $('soilResult');
+  if (isNaN(v) || $('soilVal').value === '') { box.className = 'soil-result show'; box.style.background = '#fdf6e9'; box.innerHTML = '请输入数值'; return; }
+  const rule = SOIL_RULES[type];
+  const [level, action, tone] = rule.eval(v);
+  const colors = { ok: ['#e8f5ec', '#1d6b41'], warn: ['#fdf6e9', '#8a6410'], bad: ['#fbeae7', '#a03a2d'] };
+  const [bg, fg] = colors[tone];
+  box.style.background = bg; box.style.color = fg;
+  box.className = 'soil-result show';
+  box.innerHTML = `<span class="lv">${rule.name}：${level}</span> → 建议：${action}`;
+}
+$('soilType').addEventListener('change', e => { $('soilUnit').textContent = SOIL_RULES[e.target.value].unit; $('soilResult').className='soil-result'; });
+
 refresh();
 setInterval(refresh, 5*60*1000);
 window.addEventListener('resize', ()=>Object.values(charts).forEach(c=>c.resize()));
