@@ -116,6 +116,13 @@ footer b{color:var(--ink)}
 
 <section>
   <div class="wrap">
+    <div class="sec-head"><h2>智能建议 · 当下该做什么</h2><p>由实时数据驱动的决策引擎：综合溶解氧、水位、电导率、水温、气象与设备状态，给出当下可执行的处置建议。规则阈值源自课题组 9 月数据回测标定与雨水花园对照实验结论。</p></div>
+    <div class="alert-list" id="adviceList"><div class="empty">加载中…</div></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
     <div class="sec-head"><h2>预警事件记录</h2><p>由预警规则引擎自动产生（规则经 9 月历史数据回测标定，误报率 0）。</p></div>
     <div class="alert-list" id="alertList"><div class="empty">加载中…</div></div>
   </div>
@@ -221,6 +228,96 @@ function renderSnap(latest){
   $('snapBody').innerHTML = rows || '<tr><td colspan="4" style="text-align:center">无数据</td></tr>';
 }
 
+/* ---------- 智能建议引擎 ---------- */
+/* 阈值依据：9月1669条数据回测标定 + 雨水花园对照实验（极端鱼粮组氨氮500mg/L富营养链路） */
+function computeAdvice(latest, history){
+  const refTs = latest.updated_ts || Math.floor(Date.now()/1000);
+  const hour = new Date(refTs*1000).getHours();
+  const find = sn => (latest.devices||[]).find(d=>d.serialNo===sn);
+  const list = [];
+  const add = (level, icon, title, detail) => list.push({level, icon, title, detail});
+
+  const deep = find('ZJ_SZ06_009');
+  const met = find('QXZ-A0014');
+  const isOn = dev => dev && dev.data && dev.data.create_time && (refTs - Number(dev.data.create_time)) < 900;
+  const num = v => { const n = Number(v); return isNaN(n) ? null : n; };
+
+  // 1. 设备健康优先：关键设备离线时只给处置建议，不用过期数据做生态判断
+  for (const [dev, name] of [[deep,'深水区水质站'],[met,'气象监测站']]) {
+    if (dev && !isOn(dev)) {
+      const h = ((refTs - Number(dev.data?.create_time || refTs))/3600).toFixed(0);
+      add('red','🔌', `${name}离线`, `已离线约 ${h} 小时。建议检查小花园室外网关：电源、4G信号、SIM流量。恢复后数据自动续传。`);
+    }
+  }
+
+  // 2. 溶解氧系列建议（仅设备在线时）
+  if (isOn(deep)) {
+    const doNow = num(deep.data.do);
+    const rows = history.filter(h=>h.serial_no==='ZJ_SZ06_009').map(h=>({t:Number(h.create_time), do:num(h.payload.do), wl:num(h.payload.wl), ec:num(h.payload.ec), wt:num(h.payload.temperature), nh:num(h.payload.nh)})).filter(r=>r.do!==null);
+    const last3h = rows.filter(r=>r.t > refTs-10800);
+    const last24h = rows.filter(r=>r.t > refTs-86400);
+
+    if (doNow !== null) {
+      if (doNow < 2) add('red','🚨','紧急补氧', `当前溶解氧 ${doNow.toFixed(2)} mg/L 已跌破 2.0 严重缺氧线，水生生物有窒息死亡风险。建议立即开启增氧泵，并减少今日投喂。`);
+      else if (doNow < 3) add('red','⚠️','建议补氧', `当前溶解氧 ${doNow.toFixed(2)} mg/L 低于 3.0 警戒线。建议开启增氧泵；若正值夜间，凌晨 2–6 点将持续走低，需保持增氧至日出后。`);
+      else if (doNow < 5 && hour >= 20 || doNow < 5 && hour < 6) add('yellow','🌙','夜间低氧预防', `当前溶解氧 ${doNow.toFixed(2)} mg/L 且处于夜间耗氧时段。历史数据显示凌晨可能跌破 3.0，建议预防性开启增氧。`);
+      else if (doNow > 12 && hour >= 11 && hour <= 15) add('yellow','🌿','午后过饱和提示', `当前溶解氧 ${doNow.toFixed(2)} mg/L 过饱和，说明藻类光合作用旺盛。这类水体夜间呼吸作用强、缺氧风险高，建议傍晚提前检查增氧设备。`);
+      else add('green','✅','溶氧正常', `当前溶解氧 ${doNow.toFixed(2)} mg/L，处于安全区间。`);
+
+      // DO 3小时下降趋势
+      if (last3h.length >= 6) {
+        const slope = (last3h[last3h.length-1].do - last3h[0].do) / ((last3h[last3h.length-1].t - last3h[0].t)/3600);
+        if (slope < -1.5 && doNow < 6) add('yellow','📉','溶氧快速下降', `过去3小时溶解氧以 ${Math.abs(slope).toFixed(1)} mg/L·h 速率下降，按此趋势约 ${((doNow-3)/Math.abs(slope)).toFixed(1)} 小时后触及警戒线，建议提前增氧。`);
+      }
+      // 水位建议（对照24h前）
+      const wlNow = num(deep.data.wl);
+      const day24 = rows.filter(r=>r.t <= refTs-86400+1800 && r.wl!==null);
+      if (wlNow !== null && last24h.length > 10) {
+        const wl24 = last24h[0].wl;
+        if (wlNow < wl24 * 0.95) add('yellow','💧','建议补水', `水位 ${wlNow.toFixed(2)} m 较24小时前（${wl24.toFixed(2)} m）下降超 5%。蒸腾蒸发明显，建议开启补水阀（生态鱼池补水控制可远程操作）。`);
+      }
+      // EC 扰动处置
+      if (last3h.length >= 2) {
+        const base = rows.filter(r=>r.t <= refTs-3600 && r.ec!==null).pop();
+        const ecNow = num(deep.data.ec);
+        if (base && ecNow !== null && Math.abs(ecNow-base.ec)/base.ec > 0.10)
+          add('yellow','🧪','疑似污染输入', `电导率1小时变幅 ${(Math.abs(ecNow-base.ec)/base.ec*100).toFixed(1)}%。建议现场排查：是否有雨水径流带入、投喂过量（对照实验显示鱼粮可使氨氮升至500mg/L级别）或落叶腐败，必要时部分换水。`);
+      }
+      // 氨氮
+      const nhNow = num(deep.data.nh);
+      if (nhNow !== null && nhNow > 0.5) add('yellow','🐟','氨氮偏高', `氨氮 ${nhNow.toFixed(2)} mg/L 偏高，建议减少投喂、检查过滤循环。`);
+      // 水温
+      const wtNow = num(deep.data.temperature);
+      if (wtNow !== null && wtNow > 30) add('yellow','🌡️','高温缺氧风险', `水温 ${wtNow.toFixed(1)}℃ 超过30℃，溶氧饱和度下降，今夜缺氧风险升高，建议傍晚增氧并适当遮阴。`);
+    }
+  }
+
+  // 3. 气象联动
+  if (isOn(met)) {
+    const rain = num(met.data.rainfall);
+    const rows = history.filter(h=>h.serial_no==='QXZ-A0014' && Number(h.create_time) > refTs-3600);
+    if (rows.length >= 2) {
+      const rainH = num(rows[rows.length-1].payload.rainfall) - num(rows[0].payload.rainfall);
+      if (rainH > 2) add('yellow','🌧️','降雨进行中', `过去1小时降雨约 ${rainH.toFixed(1)} mm。注意池塘水位上涨与地表径流输入（可能引起电导率波动），雨后检查溢流口。`);
+    }
+    const light = num(met.data.light), mt = num(met.data.temperature);
+    if (light !== null && light > 50000 && mt !== null && mt > 28) add('green','☀️','强光高温时段', '当前强光高温，水体光合作用旺盛，午后溶氧将冲高——注意这是今夜缺氧的前兆信号，傍晚前确认增氧设备可用。');
+  }
+
+  // 4. 固定提示
+  add('green','🔬','pH 数据待补', '平台 pH 探头故障中（数据无效），ESP32 自研 pH 节点接入前，pH 相关建议暂停。');
+  if (!list.some(a=>a.level==='red'||a.level==='yellow')) add('green','🎉','一切正常', '各项指标均在安全区间，无处置事项。保持日常巡查即可。');
+
+  return list.sort((a,b)=>({red:0,yellow:1,green:2}[a.level]-{red:0,yellow:1,green:2}[b.level]));
+}
+
+function renderAdvice(latest, history){
+  const list = computeAdvice(latest, history);
+  $('adviceList').innerHTML = list.map(a=>
+    `<div class="alert-item ${a.level==='red'?'red':''}"><div class="a-head"><span>${a.icon} ${a.title}</span></div><p>${a.detail}</p></div>`
+  ).join('');
+}
+
 async function refresh(){
   const [latest, today, yesterday, alerts] = await Promise.all([
     fetchJSON('./data/latest.json'),
@@ -233,7 +330,9 @@ async function refresh(){
   $('updateTime').textContent = `最近采集：${latest.updated_at}` + (collectAgeMin > 45 ? `（⚠️ 云端采集已中断 ${collectAgeMin} 分钟）` : '');
   $('footTime').textContent = `数据时间：${latest.updated_at}`;
   renderDevices(latest); renderSnap(latest); renderAlerts(alerts);
-  renderCharts([...(yesterday||[]), ...(today||[])]);
+  const history = [...(yesterday||[]), ...(today||[])];
+  renderCharts(history);
+  renderAdvice(latest, history);
 }
 refresh();
 setInterval(refresh, 5*60*1000);
