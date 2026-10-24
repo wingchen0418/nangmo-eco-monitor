@@ -4,7 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>蔚芝之美 · 校园水生态数字孪生监测</title>
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script src="https://cdn.staticfile.org/echarts/5.5.0/echarts.min.js"></script>
+<script>if(!window.echarts)document.write('<script src="https:\/\/cdn.jsdelivr.net\/npm\/echarts@5.5.0\/dist\/echarts.min.js"><\/script>')</script>
 <style>
 :root{
   --ink:#1d2b26; --ink-soft:#4a5d55; --paper:#f7f9f6; --panel:#ffffff;
@@ -129,7 +130,7 @@ footer b{color:var(--ink)}
 
 <section>
   <div class="wrap">
-    <div class="sec-head"><h2>深水区水质 · 48 小时曲线</h2><p>溶解氧呈现显著的昼夜节律：午后光合作用产氧达峰，凌晨呼吸作用耗氧触底，是判断池塘生态健康的核心指标。</p></div>
+    <div class="sec-head"><h2>深水区水质 · 时序曲线</h2><p>溶解氧呈现显著的昼夜节律：午后光合作用产氧达峰，凌晨呼吸作用耗氧触底，是判断池塘生态健康的核心指标。<span id="chartRangeNote"></span></p></div>
     <div class="chart-grid">
       <div class="chart-card full"><h3>溶解氧（DO）· mg/L</h3><div class="chart" id="chartDO"></div><p class="note">参考线：3 mg/L 低氧预警（黄）/ 2 mg/L 严重缺氧（红）</p></div>
       <div class="chart-card"><h3>水温 · ℃</h3><div class="chart" id="chartTemp"></div></div>
@@ -290,8 +291,17 @@ function dayStr(offset){ const d=new Date(Date.now()+offset*86400000); return `$
 
 function isOnline(dev, refTs){ return dev.data && dev.data.create_time && (refTs - Number(dev.data.create_time)) < 900; }
 
-function renderDevices(latest){
+function renderDevices(latest, history){
   const refTs = latest.updated_ts || Math.floor(Date.now()/1000);  // 以采集时刻为基准判定设备在线状态
+  // 离线设备的卡片数值：取历史中最后一条合理值（平台冻结快照可能含坏包）
+  const lastSane = (sn, key) => {
+    const rows = (history||[]).filter(h=>h.serial_no===sn);
+    for (let i = rows.length - 1; i >= 0; i--) {
+      const v = sane(key, rows[i].payload[key]);
+      if (v !== null) return v;
+    }
+    return null;
+  };
   const cards = KEY_DEVICES.map(kd => {
     const dev = (latest.devices||[]).find(d=>d.serialNo===kd.serialNo);
     const online = dev && isOnline(dev, refTs);
@@ -299,9 +309,10 @@ function renderDevices(latest){
     const cls = online?'':(stale?'stale':'offline');
     const stText = online?'在线':(stale?'数据延迟':'离线');
     const metrics = kd.metrics.map(([key,label,unit])=>{
-      let v = dev && dev.data ? dev.data[key] : null;
-      if(v===undefined||v===null||v==='') v='—'; else v=Number(v).toFixed(key==='do'?2:1);
-      return `<div><b>${v}</b><span>${label} ${unit}</span></div>`;
+      let v = dev && dev.data ? sane(key, dev.data[key]) : null;
+      if (v === null && !online) v = lastSane(kd.serialNo, key);  // 离线时回退到历史最后合理值
+      const disp = v === null ? '—' : v.toFixed(key==='do'?2:1);
+      return `<div><b>${disp}</b><span>${label} ${unit}</span></div>`;
     }).join('');
     const t = dev && dev.data && dev.data.create_time ? fmtT(Number(dev.data.create_time)) : '无数据';
     return `<div class="dev-card ${cls}"><div class="dev-head"><h3>${kd.name}</h3><span class="st">${stText}</span></div><div class="dev-metrics">${metrics}</div><div class="dev-time">更新 ${t}</div></div>`;
@@ -311,13 +322,18 @@ function renderDevices(latest){
   $('deviceCount').textContent = `全网络 ${on}/${(latest.devices||[]).length} 台设备在线（采集时刻）`;
 }
 
+/* 数据合理性区间（物理量程+本池塘历史基线），超出的点视为设备离线瞬间的坏包，剔除出图表与卡片 */
+const SANITY = { do:[0,25], temperature:[-10,50], ec:[50,2000], wl:[0,5], ph:[0,14], nh:[0,50], light:[0,200000], humidity:[0,100], pm25:[0,1000], pm10:[0,1500], tvoc:[0,50], rainfall:[0,100000], wind_speed:[0,60], pressure:[900,1100] };
+const sane = (key, v) => { const n = Number(v); if (isNaN(n)) return null; const r = SANITY[key]; return (r && (n < r[0] || n > r[1])) ? null : n; };
+
 function seriesFrom(history, serialNo, key){
-  return history.filter(h=>h.serial_no===serialNo && h.payload[key]!==undefined && h.payload[key]!=='')
-    .map(h=>[Number(h.create_time)*1000, Number(h.payload[key])]);
+  return history.filter(h=>h.serial_no===serialNo && sane(key, h.payload[key]) !== null)
+    .map(h=>[Number(h.create_time)*1000, sane(key, h.payload[key])]);
 }
 function downsample(arr, maxN=600){ if(arr.length<=maxN) return arr; const step=Math.ceil(arr.length/maxN); return arr.filter((_,i)=>i%step===0); }
 
 function makeChart(id, opt){
+  if(!window.echarts) return;  // CDN故障时静默跳过图表，其余板块不受影响
   if(!charts[id]) charts[id]=echarts.init($(id));
   charts[id].setOption(Object.assign({
     grid:{left:48,right:20,top:30,bottom:44},
@@ -448,21 +464,46 @@ function renderAdvice(latest, history){
   ).join('');
 }
 
+/* 历史数据加载：默认昨天+今天；深水区数据不足时自动向前回溯（最多7天），保证设备离线期间曲线仍可看 */
+async function loadHistory(){
+  const all = [];
+  const seen = new Set();
+  for (let i = 0; i < 7; i++) {
+    const d = await fetchJSON(`./data/history/${dayStr(-i)}.json`);
+    if (d) for (const h of d) {
+      const key = h.serial_no + '|' + h.create_time;
+      if (!seen.has(key)) { seen.add(key); all.push(h); }
+    }
+    const deepCount = all.filter(h=>h.serial_no==='ZJ_SZ06_009').length;
+    if (deepCount >= 200) break;
+  }
+  return all.sort((a,b)=>Number(a.create_time)-Number(b.create_time));
+}
+
+function chartRangeNote(history){
+  const rows = history.filter(h=>h.serial_no==='ZJ_SZ06_009');
+  if (!rows.length) return '';
+  const tmin = Math.min(...rows.map(r=>Number(r.create_time)));
+  const tmax = Math.max(...rows.map(r=>Number(r.create_time)));
+  const stale = (Date.now()/1000 - tmax) > 7200;
+  return `（数据区间：${fmtT(tmin)} ~ ${fmtT(tmax)}` + (stale ? '，设备离线中，展示最后已知数据）' : '）');
+}
+
 async function refresh(){
-  const [latest, today, yesterday, alerts] = await Promise.all([
+  const [latest, history, alerts] = await Promise.all([
     fetchJSON('./data/latest.json'),
-    fetchJSON(`./data/history/${dayStr(0)}.json`),
-    fetchJSON(`./data/history/${dayStr(-1)}.json`),
+    loadHistory(),
     fetchJSON('./data/alerts.json'),
   ]);
   if(!latest){ $('updateTime').textContent='等待首次采集…（GitHub Actions 运行后数据将自动出现）'; return; }
   const collectAgeMin = Math.round((Date.now()/1000 - latest.updated_ts)/60);
   $('updateTime').textContent = `最近采集：${latest.updated_at}` + (collectAgeMin > 45 ? `（⚠️ 云端采集已中断 ${collectAgeMin} 分钟）` : '');
   $('footTime').textContent = `数据时间：${latest.updated_at}`;
-  renderDevices(latest); renderSnap(latest); renderAlerts(alerts);
-  const history = [...(yesterday||[]), ...(today||[])];
+  renderDevices(latest, history); renderSnap(latest); renderAlerts(alerts);
   renderCharts(history);
   renderAdvice(latest, history);
+  const el = $('chartRangeNote');
+  if (el) el.textContent = chartRangeNote(history);
 }
 /* ---------- 土壤检测小助手（阈值库移植自上届课题组标定表） ---------- */
 const SOIL_RULES = {

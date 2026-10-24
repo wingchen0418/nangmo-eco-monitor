@@ -164,6 +164,7 @@ def main():
 
     # 1. 全部设备最新快照
     list_data = api_get("school.device.list", "&page=1&listRows=100")
+    detail_serials = {d["serialNo"] for d in DETAIL_DEVICES}
     for dev in list_data.get("list", []):
         d = dev.get("data") or {}
         latest["devices"].append({
@@ -171,6 +172,9 @@ def main():
             "remarks": dev.get("remarks", ""), "status": dev["status"],
             "data": d if d else None,
         })
+        # 重点设备的时序由 detail 接口提供（更高保真），list 快照在设备离线瞬间可能含坏包，跳过入库
+        if dev["serialNo"] in detail_serials:
+            continue
         if d and d.get("create_time"):
             key = (dev["serialNo"], int(d["create_time"]))
             if key not in existing:
