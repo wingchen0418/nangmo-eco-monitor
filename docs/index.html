@@ -111,8 +111,8 @@ footer b{color:var(--ink)}
 <header class="hero">
   <div class="wrap">
     <div class="kicker">Digital Twin · IoT · Real-time</div>
-    <h1>蔚芝之美 · 校园水生态数字孪生监测</h1>
-    <p class="sub">物联网传感网络 × 云端自动采集 × 智能预警规则引擎。数据每 5 分钟由校园传感设备上报，云端管道自动入仓、巡检、预警。南洋模范中学 青少年科技创新大赛项目。</p>
+    <h1>蔚芝之美 · 公园湿地智慧运维决策支持系统</h1>
+    <p class="sub">基于既有物联网监测数据的智慧运维方案 · 校园生态园验证场景 · 数据云端自动更新</p>
     <div class="live-row">
       <div class="live-dot"></div>
       <span id="updateTime">数据加载中…</span>
@@ -127,7 +127,32 @@ footer b{color:var(--ink)}
     <div class="dev-cards" id="devCards"><div class="empty">加载中…</div></div>
   </div>
 </section>
-
+<section>
+  <div class="wrap">
+    <div class="sec-head"><h2>运维建议 · 当下该做什么</h2><p>由实时数据驱动的运维决策引擎：综合溶解氧、水位、电导率、水温、气象与设备状态，给出当下可执行的处置建议。规则阈值源自课题组 9 月数据回测标定与雨水花园对照实验结论。</p></div>
+    <div class="alert-list" id="adviceList"><div class="empty">加载中…</div></div>
+  </div>
+</section>
+<section>
+  <div class="wrap">
+    <div class="sec-head"><h2>监测信号 → 运维动作</h2><p>方案核心：把传感数据直接翻译为当下可执行的运维指令，阈值经 9 月历史数据回测标定。</p></div>
+    <div class="panel" style="overflow-x:auto">
+      <table class="snap-table">
+        <thead><tr><th>监测信号</th><th>触发条件</th><th>运维动作</th></tr></thead>
+        <tbody>
+          <tr><td>溶解氧 &lt; 3.0 mg/L</td><td>低于渔业水质安全线（GB 11607-89）</td><td>开启增氧泵</td></tr>
+          <tr><td>溶解氧 &lt; 2.0 mg/L</td><td>严重缺氧</td><td>紧急增氧并排查耗氧负荷</td></tr>
+          <tr><td>水位 24 小时降幅 &gt; 5%</td><td>蒸发或渗漏</td><td>启动补水阀</td></tr>
+          <tr><td>电导率 1 小时变幅 &gt; 10%</td><td>疑似污染输入</td><td>排查污染源（径流、腐败物等）</td></tr>
+          <tr><td>午后溶解氧 &gt; 12 mg/L</td><td>藻类光合作用过旺</td><td>预警夜间缺氧，预检增氧设备</td></tr>
+          <tr><td>水温 &gt; 30 ℃</td><td>高温加速耗氧</td><td>增氧并评估遮阴措施</td></tr>
+          <tr><td>设备离线 &gt; 15 分钟</td><td>监测中断</td><td>检查网关电源与通讯信号</td></tr>
+          <tr><td>水草生物量过高（巡查 + 微生物指标）</td><td>富营养化趋势</td><td>安排收割打捞，移除营养盐</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
 <section>
   <div class="wrap">
     <div class="sec-head"><h2>深水区水质 · 时序曲线</h2><p>溶解氧呈现显著的昼夜节律：午后光合作用产氧达峰，凌晨呼吸作用耗氧触底，是判断池塘生态健康的核心指标。<span id="chartRangeNote"></span></p></div>
@@ -139,7 +164,6 @@ footer b{color:var(--ink)}
     <div class="note bad-note" style="margin-top:16px">⚠️ pH 数据说明：平台 pH 探头自 2026 年 7 月起持续故障（读数恒 2.4~2.6，超出合理量程），本项目将其判定为无效数据并排除于分析之外；后续将由课题组自研 ESP32 低成本 pH 节点替代测量。</div>
   </div>
 </section>
-
 <section>
   <div class="wrap">
     <div class="sec-head"><h2>气象与空气 · 24 小时</h2><p>气象因子（光照、气温）是溶解氧昼夜节律的驱动变量，用于构建低氧预测模型。</p></div>
@@ -149,31 +173,21 @@ footer b{color:var(--ink)}
     </div>
   </div>
 </section>
-
 <section>
   <div class="wrap">
-    <div class="sec-head"><h2>智能建议 · 当下该做什么</h2><p>由实时数据驱动的决策引擎：综合溶解氧、水位、电导率、水温、气象与设备状态，给出当下可执行的处置建议。规则阈值源自课题组 9 月数据回测标定与雨水花园对照实验结论。</p></div>
-    <div class="alert-list" id="adviceList"><div class="empty">加载中…</div></div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="sec-head"><h2>预警事件记录</h2><p>由预警规则引擎自动产生（规则经 9 月历史数据回测标定，误报率 0）。</p></div>
+    <div class="sec-head"><h2>运维事件记录</h2><p>由预警规则引擎自动产生（规则经 9 月历史数据回测标定，误报率 0）。</p></div>
     <div class="alert-list" id="alertList"><div class="empty">加载中…</div></div>
   </div>
 </section>
-
 <section>
   <div class="wrap">
-    <div class="sec-head"><h2>校园传感网络 · 37 台设备快照</h2><p>覆盖水质、气象、空气、土壤、环境五类传感器的校园物联网。</p></div>
+    <div class="sec-head"><h2>校园验证场景 · 37 台设备快照</h2><p>覆盖水质、气象、空气、土壤、环境五类传感器的校园物联网。</p></div>
     <table class="snap-table"><thead><tr><th>设备</th><th>类型</th><th>位置/用途</th><th>状态</th></tr></thead><tbody id="snapBody"><tr><td colspan="4" style="text-align:center">加载中…</td></tr></tbody></table>
   </div>
 </section>
-
 <section>
   <div class="wrap">
-    <div class="sec-head"><h2>宏基因组生态画像 · 三点位微生物世界</h2><p>对池塘边缘（X1）、池塘底泥（X2）、人工湿地（X3）各 3 份重复土壤样本的宏基因组测序结果。这是肉眼看不见的生态底座，也是本课题的核心科学发现层。</p></div>
+    <div class="sec-head"><h2>湿地净化功能评估 · 微生物证据</h2><p>对池塘边缘（X1）、池塘底泥（X2）、人工湿地（X3）各 3 份重复土壤样本的宏基因组测序结果。以微生物群落证据评估湿地净化功能，为运维策略提供生物学依据。</p></div>
     <div class="meta-cards">
       <div class="meta-card" style="--mc:#E8A33D">
         <h3>X1 池塘边缘</h3><div class="zone">水陆交错带土壤</div>
@@ -208,55 +222,9 @@ footer b{color:var(--ink)}
     </div>
   </div>
 </section>
-
 <section>
   <div class="wrap">
-    <div class="sec-head"><h2>土壤检测小助手</h2><p>传承自上届课题组的土壤检测阈值库（比色法/滴定法标定）。输入检测值，即时获得等级评价与处置建议。</p></div>
-    <div class="soil-tool">
-      <div class="soil-form">
-        <div>
-          <label>检测项目</label>
-          <select id="soilType">
-            <option value="k">速效钾（滴定滴数）</option>
-            <option value="ph">pH 值</option>
-            <option value="nh3">氨氮（mg/L）</option>
-            <option value="p">有效磷（mg/L）</option>
-          </select>
-        </div>
-        <div>
-          <label id="soilUnit">滴数（滴）</label>
-          <input id="soilVal" type="number" step="any" placeholder="输入数值"/>
-        </div>
-        <button onclick="soilAnalyze()">分析</button>
-      </div>
-      <div class="soil-result" id="soilResult"></div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="sec-head"><h2>科普实验 · 一粒鱼粮的富营养化之旅</h2><p>上届课题组的对照实验：过量鱼粮投入水体后，土壤浸出液检测显示——这正是我们预警引擎"EC 扰动→排查投喂"规则的实验依据。</p></div>
-    <div class="science-card">
-      <div>
-        <h3>极端鱼粮对照组检测结果</h3>
-        <p>过量投喂组的水-土系统出现典型的富营养化指纹：氨氮飙升至常规水体的数百倍，磷钾同步累积。pH 暂未漂移，说明系统缓冲尚未崩溃——但一旦崩溃就是藻华。</p>
-        <div class="science-data">
-          <div><b>500</b><span>氨氮 mg/L ⚠️</span></div>
-          <div><b>240</b><span>磷 mg/L ⚠️</span></div>
-          <div><b>170</b><span>钾 mg/L</span></div>
-          <div><b>6.0</b><span>pH（暂正常）</span></div>
-        </div>
-        <p style="margin-top:10px;font-size:12.5px">→ 对本项目的意义：池塘鱼类投喂必须严格控制；这也解释了 X2 底泥抗性基因富集的潜在成因之一。</p>
-      </div>
-      <img src="./assets/ph-ammonia.jpg" alt="pH与氨氮检测图表"/>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="sec-head"><h2>研究沿革 · 从雨水花园到数字孪生</h2><p>本项目站在上届课题组（付子和、胡展鸣、倪云睿）雨水花园研究的肩膀上：他们用 ESP32 证明了低成本物联网监测的可行性，我们把它升级为云端自治的数字孪生与预警系统。</p></div>
+    <div class="sec-head"><h2>研究沿革 · 从雨水花园到数字孪生</h2><p>本项目站在上届课题组（付子和、胡展鸣、倪云睿）雨水花园研究的肩膀上：他们用 ESP32 证明了低成本物联网监测的可行性，我们把它升级为云端自治的运维决策支持系统。</p></div>
     <div class="img-grid">
       <figure class="img-card"><img src="./assets/flow.png" alt="研究流程图"/><figcaption><b>整体研究流程</b>上届雨水花园研究的方法论框架，本项目沿用并扩展</figcaption></figure>
       <figure class="img-card"><img src="./assets/scene.jpg" alt="实验场景"/><figcaption><b>实验场景</b>校园生态园真实监测环境</figcaption></figure>
@@ -505,58 +473,6 @@ async function refresh(){
   const el = $('chartRangeNote');
   if (el) el.textContent = chartRangeNote(history);
 }
-/* ---------- 土壤检测小助手（阈值库移植自上届课题组标定表） ---------- */
-const SOIL_RULES = {
-  k: { unit: '滴数（滴）', name: '速效钾', eval: v => {
-    if (v <= 5)  return ['极丰富（≥220 mg/kg）', '无需施肥', 'ok'];
-    if (v <= 9)  return ['丰富（180–210）', '少量补充钾肥', 'ok'];
-    if (v <= 13) return ['适中（140–170）', '按需补充', 'warn'];
-    if (v <= 16) return ['偏低（110–130）', '建议补充', 'warn'];
-    if (v <= 19) return ['较低（80–100）', '急需补充', 'bad'];
-    if (v <= 22) return ['不足（50–70）', '立即补充', 'bad'];
-    if (v <= 24) return ['严重不足（30–40）', '大量补充', 'bad'];
-    return ['危险水平（<30）', '需改良土壤，建议专业处理', 'bad'];
-  }},
-  ph: { unit: 'pH 值', name: 'pH', eval: v => {
-    if (v < 4.5)  return ['强酸性', '仅适合蓝莓、杜鹃、茶；建议施草木灰或石灰改良', 'bad'];
-    if (v < 5.5)  return ['酸性', '适合马铃薯、甘薯；多数植物受限', 'warn'];
-    if (v < 6.5)  return ['弱酸性', '适合玉米、小麦等，大多数植物可生长', 'ok'];
-    if (v <= 7.5) return ['中性', '大多数作物最适区间 ✅', 'ok'];
-    if (v <= 8.5) return ['弱碱性', '适合甜菜、苜蓿；喜酸植物受限', 'warn'];
-    if (v <= 9.5) return ['碱性', '需要改良（石膏/硫磺粉/有机肥）', 'bad'];
-    return ['强碱性', '不适宜种植，需专业改良', 'bad'];
-  }},
-  nh3: { unit: 'mg/L', name: '氨氮', eval: v => {
-    if (v < 10)  return ['极低', '立即补充氮肥', 'bad'];
-    if (v < 30)  return ['偏低', '建议补充氮肥', 'warn'];
-    if (v < 50)  return ['适中', '维持现状', 'ok'];
-    if (v <= 100) return ['丰富', '无需补充', 'ok'];
-    if (v <= 200) return ['过量', '减少施肥', 'warn'];
-    return ['危险', '停止施肥！注意水体富营养化风险', 'bad'];
-  }},
-  p: { unit: 'mg/L', name: '有效磷', eval: v => {
-    if (v < 20)  return ['极低', '立即补充磷肥', 'bad'];
-    if (v < 40)  return ['偏低', '建议补充磷肥', 'warn'];
-    if (v < 80)  return ['适中', '维持现状', 'ok'];
-    if (v <= 120) return ['丰富', '无需补充', 'ok'];
-    if (v <= 240) return ['过量', '减少施肥', 'warn'];
-    return ['危险', '停止施肥！磷流失会污染水体', 'bad'];
-  }},
-};
-function soilAnalyze(){
-  const type = $('soilType').value;
-  const v = Number($('soilVal').value);
-  const box = $('soilResult');
-  if (isNaN(v) || $('soilVal').value === '') { box.className = 'soil-result show'; box.style.background = '#fdf6e9'; box.innerHTML = '请输入数值'; return; }
-  const rule = SOIL_RULES[type];
-  const [level, action, tone] = rule.eval(v);
-  const colors = { ok: ['#e8f5ec', '#1d6b41'], warn: ['#fdf6e9', '#8a6410'], bad: ['#fbeae7', '#a03a2d'] };
-  const [bg, fg] = colors[tone];
-  box.style.background = bg; box.style.color = fg;
-  box.className = 'soil-result show';
-  box.innerHTML = `<span class="lv">${rule.name}：${level}</span> → 建议：${action}`;
-}
-$('soilType').addEventListener('change', e => { $('soilUnit').textContent = SOIL_RULES[e.target.value].unit; $('soilResult').className='soil-result'; });
 
 refresh();
 setInterval(refresh, 5*60*1000);
