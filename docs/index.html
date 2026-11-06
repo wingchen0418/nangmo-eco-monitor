@@ -432,11 +432,11 @@ function renderAdvice(latest, history){
   ).join('');
 }
 
-/* 历史数据加载：默认昨天+今天；深水区数据不足时自动向前回溯（最多7天），保证设备离线期间曲线仍可看 */
+/* 历史数据加载：默认昨天+今天；深水区数据不足时自动向前回溯（最多31天），设备离线期间持续展示最后已知数据作模板，恢复后自动接续 */
 async function loadHistory(){
   const all = [];
   const seen = new Set();
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 31; i++) {
     const d = await fetchJSON(`./data/history/${dayStr(-i)}.json`);
     if (d) for (const h of d) {
       const key = h.serial_no + '|' + h.create_time;
