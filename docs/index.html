@@ -343,7 +343,7 @@ function renderSnap(latest){
 }
 
 /* ---------- 智能建议引擎 ---------- */
-/* 阈值依据：9月1669条数据回测标定 + 雨水花园对照实验（极端鱼粮组氨氮500mg/L富营养链路） */
+/* 阈值依据：9月1669条历史数据回测标定 */
 function computeAdvice(latest, history){
   const refTs = latest.updated_ts || Math.floor(Date.now()/1000);
   const hour = new Date(refTs*1000).getHours();
@@ -395,7 +395,7 @@ function computeAdvice(latest, history){
         const base = rows.filter(r=>r.t <= refTs-3600 && r.ec!==null).pop();
         const ecNow = num(deep.data.ec);
         if (base && ecNow !== null && Math.abs(ecNow-base.ec)/base.ec > 0.10)
-          add('yellow','🧪','疑似污染输入', `电导率1小时变幅 ${(Math.abs(ecNow-base.ec)/base.ec*100).toFixed(1)}%。建议现场排查：是否有雨水径流带入、投喂过量（对照实验显示鱼粮可使氨氮升至500mg/L级别）或落叶腐败，必要时部分换水。`);
+          add('yellow','🧪','疑似污染输入', `电导率1小时变幅 ${(Math.abs(ecNow-base.ec)/base.ec*100).toFixed(1)}%。建议现场排查：是否有雨水径流带入、落叶腐败或外源污染物，必要时部分换水。`);
       }
       // 氨氮
       const nhNow = num(deep.data.nh);
