@@ -166,13 +166,22 @@ def main():
     list_data = api_get("school.device.list", "&page=1&listRows=100")
     detail_serials = {d["serialNo"] for d in DETAIL_DEVICES}
     for dev in list_data.get("list", []):
+        if dev["serialNo"] in DEPRECATED_SERIALS:
+            continue
         d = dev.get("data") or {}
         latest["devices"].append({
             "serialNo": dev["serialNo"], "categoryName": dev["categoryName"],
             "remarks": dev.get("remarks", ""), "status": dev["status"],
             "data": d if d else None,
         })
-        # 重点设备的时序由 detail 接口提供（更高保真），list 快照在设备离线瞬间可能含坏包，跳过入库
+        # 已弃用设备（2026-11-07 确认下线）：5 台萤石摄像头、2 台实验室水质装置、7 台 WiFi 智能插座
+DEPRECATED_SERIALS = {
+    "BF9913932", "BF9914911", "BF9914916", "BF9913751", "BF9914123",
+    "ZJ_SZ04_003", "ZJ_SZ04_004",
+    "Wis00239", "Wis00240", "Wis00248", "Wis00267", "Wis00269", "Wis00234", "Wis00232",
+}
+
+# 重点设备的时序由 detail 接口提供（更高保真），list 快照在设备离线瞬间可能含坏包，跳过入库
         if dev["serialNo"] in detail_serials:
             continue
         if d and d.get("create_time"):
